@@ -1,13 +1,16 @@
 # Trans-late-former
 
-An encoder-decoder translation transformer in PyTorch, with my own implementation of multi-head attention. The model was primarily based on the architecture described in "Attention is all you Need" (Vaswani, 2017), with some small differences - I found learned positional embeddings worked slightly better than sinusoidal positional embeddings and I added gradient norm clipping as various other implementers achieved better performance with them. To train the model, install `requirements.txt` and run `python3 main.py`. The model's building blocks are contained in `model.py`.
+An encoder-decoder translation transformer in PyTorch, with my own implementation of multi-head attention. The model was primarily based on the architecture described in "Attention is all you Need" (Vaswani, 2017), with some small differences - I found learned positional embeddings worked slightly better than sinusoidal positional embeddings and I added gradient norm clipping as various other implementers achieved better performance with them. 
+
+### How to use
+To train the model, install `requirements.txt` and run `python3 main.py`. The model's building blocks are contained in `model.py`.
 
 ### Dataset
 The model was trained on the Multi30k dataset to translate from German to English. This was a good sized datset for a "GPU poor" like myself because an RTX 3060 can train a full epoch in a few minutes.  
 
 ### Results 
 
-I achieved a BLEU score of 33.9 on the validation set and validation loss of 1.75. This is slightly less than SOTA on this dataset with a similar architecture. 
+I achieved a BLEU score of 33.9 on the validation set and validation loss of 1.75. This is slightly less than SOTA on this dataset with a similar architecture. In the below figure, the training loss is a moving average across each batch in an epoch whereas the val loss is calculated over the whole validation dataset in one operation.
 
 ![Loss curves](output/loss.png)
 
