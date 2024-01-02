@@ -111,23 +111,21 @@ def calculate_bleu(model, dataloader, context_size, sos_idx, pad_idx, eos_idx, v
 
         label_sentences.extend([[vocab.textify(tok) for tok in label if tok not in [eos_idx, pad_idx]]] for label in labels.tolist())
 
-  print(pred_sentences)
-  print(label_sentences)
   model.train()
   return bleu_score(pred_sentences, label_sentences)
 
 def visualise_attention(attention_matrix, src_sentence, targ_sentence, save_path=None):
   attention_matrix = attention_matrix.cpu().detach()
   n_heads = attention_matrix.shape[1]
-  fig, axs = plt.subplots(2, 4, figsize=(15, 25))
+  fig, axs = plt.subplots(2, 4, figsize=(25, 15))
   for i, ax in enumerate(axs.flat):
      ax.tick_params(labelsize=12)
      ax.matshow(attention_matrix[0, i, :,:])
      ax.set_yticklabels(targ_sentence)
-     ax.set_xticklabels(src_sentence)
-     ax.label_outer()
+     ax.set_xticklabels(src_sentence, rotation=45)
      ax.xaxis.set_major_locator(ticker.MultipleLocator(1))
      ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
+     ax.tick_params(labelsize=12)
 
   if save_path is not None:
      plt.savefig(save_path)

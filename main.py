@@ -9,7 +9,6 @@ import torchtext.datasets
 
 import translateformer as tlf
 
-
 # detect device
 device= 'cuda' if torch.cuda.is_available() else 'cpu'
 print(f"device detected as {device}")
@@ -86,7 +85,7 @@ for epoch in range(n_epochs):
     train_losses.append(train_loss)
     val_losses.append(val_loss)
     if val_loss < cur_best_loss:
-      cur_best_loss = val_loss.item()
+      cur_best_loss = val_loss
       torch.save(model.state_dict(), 'output/trans-late-former-model.pt')
 
 
@@ -95,16 +94,18 @@ model.load_state_dict(torch.load('output/trans-late-former-model.pt'))
 
 # calculate bleu
 bleu = tlf.calculate_bleu(model, val_dataloader, 100, de_vocab.SOS_IDX, en_vocab.PAD_IDX, de_vocab.EOS_IDX, en_vocab)
-print("BLEU score: {bleu}")
+print(f"BLEU score: {bleu}")
 
 # generate attention figures 
 src = next(iter(train_dataloader))[0][0]
 pred_targ = tlf.greedy_decoding(model, src.unsqueeze(0), src.shape[0], en_vocab.SOS_IDX, en_vocab.PAD_IDX)
-attn = model.decoders[0].masked_attention.store
+attn = model.decoders[0].cross_attention.attn_store
 
-pad_idx = torch.argmax((src == 1).to(dtype=torch.int), dim=-1)
-trunc_src = src[:pad_idx]
-pred_trans = ["<sos>"] + [en_vocab.textify(tok) for tok in pred_targ[0]]
-src_trans = [de_vocab.textify(tok) for tok in src]
+first_pad_idx = torch.argmax((src == de_vocab.PAD_IDX).to(dtype=torch.int), dim=-1).item()
+trunc_src = src[:first_pad_idx]
+pred_trans = [""] + [en_vocab.textify(tok) for tok in pred_targ[0]] + ["<eos>"]
+src_trans =  [""] + [de_vocab.textify(tok) for tok in trunc_src]
+attn = attn[:, :, :, :first_pad_idx]
 
-tlf.visualise_attention(attn,src_trans, pred_trans, save_path="output/attention_decoder_0.png")
+
+tlf.visualise_attention(attn, src_trans, pred_trans, save_path="output/attention_decoder_0.png")
